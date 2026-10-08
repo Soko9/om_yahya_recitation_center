@@ -5,36 +5,36 @@ import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
 abstract final class AppTextStyles {
   const new _();
 
-  static TextStyle display([
+  static TextStyle display({
     double size = 94,
     Color color = AppColors.indigo,
     FontWeight weight = .bold,
-  ]) => GoogleFonts.reemKufi(
+  }) => GoogleFonts.reemKufi(
     fontSize: size,
     fontWeight: weight,
     color: color,
     height: .75,
   );
 
-  static TextStyle title([
+  static TextStyle title({
     double size = 32,
     Color color = AppColors.indigo,
     FontWeight weight = .bold,
-  ]) => GoogleFonts.beiruti(
+  }) => GoogleFonts.beiruti(
     fontSize: size,
     fontWeight: weight,
     color: color,
-    height: .75,
+    height: 1,
   );
 
-  static TextStyle body([
+  static TextStyle body({
     double size = 24,
     Color color = AppColors.indigo,
     FontWeight weight = .normal,
-  ]) => GoogleFonts.beiruti(
+  }) => GoogleFonts.beiruti(
     fontSize: size,
     fontWeight: weight,
     color: color,
-    height: .75,
+    height: 1,
   );
 }

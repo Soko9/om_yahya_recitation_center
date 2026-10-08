@@ -79,10 +79,14 @@ abstract final class DbService {
   ) async {
     final db = await _database;
 
-    final List<Map<String, dynamic>> recitationsMaps = await db.query(
-      _recitationsTableName,
-      where: 'tenant_id = ?',
-      whereArgs: [tenantId],
+    final List<Map<String, dynamic>> recitationsMaps = await db.rawQuery(
+      '''
+        SELECT * FROM $_recitationsTableName
+        LEFT JOIN $_tenantsTableName
+        ON $_recitationsTableName.tenant_id = $_tenantsTableName.id
+        WHERE tenant_id = ?
+      ''',
+      [tenantId],
     );
 
     return recitationsMaps.map(RecitationModel.fromMap).toList();
@@ -103,6 +107,30 @@ abstract final class DbService {
       _recitationsTableName,
       recitation.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<void> updateTenant(TenantModel tenant) async {
+    final db = await _database;
+    await db.update(
+      _tenantsTableName,
+      tenant.toMap(),
+      where: 'id = ?',
+      whereArgs: [tenant.id],
+    );
+  }
+
+  static Future<void> deleteTenant(int tenantId) async {
+    final db = await _database;
+    await db.delete(_tenantsTableName, where: 'id = ?', whereArgs: [tenantId]);
+  }
+
+  static Future<void> deleteRecitation(int recitationId) async {
+    final db = await _database;
+    await db.delete(
+      _recitationsTableName,
+      where: 'id = ?',
+      whereArgs: [recitationId],
     );
   }
 }

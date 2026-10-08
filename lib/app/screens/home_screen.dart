@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
+import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
+import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
+import 'package:om_yahya_recitation_center/core/theme/app_text_styles.dart';
 
 class HomeScreen extends StatefulWidget {
   const new({super.key});
@@ -45,9 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _addTenant() async {
     final newTenant = TenantModel(
       id: DateTime.now().millisecondsSinceEpoch,
-      firstName: 'John',
-      middleName: 'Doe',
-      lastName: 'Smith',
+      firstName: 'أحمد',
+      middleName: 'محمد',
+      lastName: 'خالد',
       joinedAt: DateTime.now(),
     );
 
@@ -65,14 +68,24 @@ class _HomeScreenState extends State<HomeScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _tenants.isEmpty
-          ? const Center(child: Text('No tenants found.'))
-          : ListView.builder(
+          ? Center(
+              child: Text('لا يوجد طلاب حاليا', style: AppTextStyles.body()),
+            )
+          : ListView.separated(
               itemCount: _tenants.length,
+              separatorBuilder: (context, index) => Container(
+                height: .75,
+                margin: const .only(top: 8, bottom: 2, left: 12, right: 12),
+                color: AppColors.green,
+              ),
               itemBuilder: (context, index) {
                 final tenant = _tenants[index];
                 return ListTile(
-                  title: Text(tenant.firstName),
-                  subtitle: Text('Joined at: ${tenant.joinedAt}'),
+                  title: Text(tenant.fullName, style: AppTextStyles.title()),
+                  subtitle: Text(
+                    'انضم في: ${tenant.joinedAt.toIso8601StringWithoutMilliseconds().toArabicNumbers()}',
+                    style: AppTextStyles.body(size: 18),
+                  ),
                 );
               },
             ),

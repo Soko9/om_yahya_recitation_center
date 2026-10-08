@@ -1,3 +1,5 @@
+import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
+
 class RecitationModel {
   const new({
     required this.id,
@@ -5,13 +7,14 @@ class RecitationModel {
     required this.recitedAt,
     required this.rewayah,
     required this.qPart,
-    required this.surahId,
+    required this.surahNumber,
     required this.startQVerse,
     required this.endQVerse,
     required this.reciteScore,
     required this.tajweedScore,
     required this.memoryScore,
     this.notes,
+    this.tenant,
   });
 
   factory fromMap(Map<String, dynamic> map) {
@@ -21,13 +24,16 @@ class RecitationModel {
       recitedAt: DateTime.parse(map['recited_at'] as String),
       rewayah: map['rewayah'] as String,
       qPart: map['q_part'] as int,
-      surahId: map['surah_id'] as int,
+      surahNumber: map['surah_number'] as int,
       startQVerse: map['start_q_verse'] as int,
       endQVerse: map['end_q_verse'] as int,
       reciteScore: map['recite_score'] as int,
       tajweedScore: map['tajweed_score'] as int,
       memoryScore: map['memory_score'] as int,
       notes: map['notes'] as String?,
+      tenant: map['tenant'] != null
+          ? TenantModel.fromMap(map['tenant'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -36,13 +42,14 @@ class RecitationModel {
   final DateTime recitedAt;
   final String rewayah;
   final int qPart;
-  final int surahId;
+  final int surahNumber;
   final int startQVerse;
   final int endQVerse;
   final int reciteScore;
   final int tajweedScore;
   final int memoryScore;
   final String? notes;
+  final TenantModel? tenant;
 
   Map<String, dynamic> toMap() {
     return {
@@ -51,7 +58,7 @@ class RecitationModel {
       'recited_at': recitedAt.toIso8601String(),
       'rewayah': rewayah,
       'q_part': qPart,
-      'surah_id': surahId,
+      'surah_number': surahNumber,
       'start_q_verse': startQVerse,
       'end_q_verse': endQVerse,
       'recite_score': reciteScore,

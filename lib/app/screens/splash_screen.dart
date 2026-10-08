@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Text(
               'مقرأة أم\nيحيى',
               textAlign: .center,
-              style: AppTextStyles.display(200),
+              style: AppTextStyles.display(size: 200),
             ),
           ),
         ),
