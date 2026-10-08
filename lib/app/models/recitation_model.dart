@@ -1,4 +1,37 @@
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
+import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
+
+enum QuranRewaya {
+  hafsAnAsim,
+  shubahAnAsim,
+
+  warshAnNafi,
+  qalunAnNafi,
+
+  alDuriAnAbiAmr,
+  alSusiAnAbiAmr,
+
+  alBaziiAnIbnKathir,
+  qunbulAnIbnKathir,
+
+  hishamAnIbnAmir,
+  ibnDhakwanAnIbnAmir,
+
+  shuabahAnHamzah,
+  khalafAnHamzah,
+
+  abuAlHarithAnAlKisai,
+  alDuriAnAlKisai,
+
+  ibnWardanAnAbiJafar,
+  ibnJammazAnAbiJafar,
+
+  alBaziiAnYaqub,
+  rawhAnYaqub,
+
+  ishaqAnKhalaf,
+  idrisAnKhalaf,
+}
 
 class RecitationModel {
   const new({
@@ -22,7 +55,9 @@ class RecitationModel {
       id: map['id'] as int,
       tenantId: map['tenant_id'] as int,
       recitedAt: DateTime.parse(map['recited_at'] as String),
-      rewayah: map['rewayah'] as String,
+      rewayah:
+          QuranRewayaExtension.fromString(map['rewayah'] as String) ??
+          QuranRewaya.hafsAnAsim,
       qPart: map['q_part'] as int,
       surahNumber: map['surah_number'] as int,
       startQVerse: map['start_q_verse'] as int,
@@ -40,7 +75,7 @@ class RecitationModel {
   final int id;
   final int tenantId;
   final DateTime recitedAt;
-  final String rewayah;
+  final QuranRewaya rewayah;
   final int qPart;
   final int surahNumber;
   final int startQVerse;
@@ -56,7 +91,7 @@ class RecitationModel {
       'id': id,
       'tenant_id': tenantId,
       'recited_at': recitedAt.toIso8601String(),
-      'rewayah': rewayah,
+      'rewayah': rewayah.name,
       'q_part': qPart,
       'surah_number': surahNumber,
       'start_q_verse': startQVerse,

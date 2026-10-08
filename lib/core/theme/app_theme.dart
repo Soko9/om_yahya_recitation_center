@@ -7,5 +7,9 @@ abstract final class AppTheme {
   static ThemeData get lightTheme => ThemeData.light().copyWith(
     scaffoldBackgroundColor: AppColors.background,
     colorScheme: ColorScheme.fromSeed(seedColor: AppColors.green),
+    appBarTheme: const AppBarTheme(
+      elevation: 0,
+      backgroundColor: AppColors.background,
+    ),
   );
 }

@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
-import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
-import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_divider.dart';
+import 'package:om_yahya_recitation_center/app/widgets/tenant_tile.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_text_styles.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -40,6 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ..addAll(tenants);
       });
     } on Exception catch (_) {
+      //! ADD ERROR HANDELING
     } finally {
       _setLoading(false);
     }
@@ -73,20 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
             )
           : ListView.separated(
               itemCount: _tenants.length,
-              separatorBuilder: (context, index) => Container(
-                height: .75,
-                margin: const .only(top: 8, bottom: 2, left: 12, right: 12),
-                color: AppColors.green,
-              ),
+              separatorBuilder: (context, index) => const AppDivider(),
               itemBuilder: (context, index) {
                 final tenant = _tenants[index];
-                return ListTile(
-                  title: Text(tenant.fullName, style: AppTextStyles.title()),
-                  subtitle: Text(
-                    'انضم في: ${tenant.joinedAt.toIso8601StringWithoutMilliseconds().toArabicNumbers()}',
-                    style: AppTextStyles.body(size: 18),
-                  ),
-                );
+                return TenantTile(tenant: tenant);
               },
             ),
     );
