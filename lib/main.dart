@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:om_yahya_recitation_center/app/screens/splash_screen.dart';
+import 'package:om_yahya_recitation_center/app/services/db_service.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await DbService.init();
   runApp(const MainApp());
 }
 
