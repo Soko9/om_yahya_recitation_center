@@ -54,7 +54,7 @@ class RecitationModel {
     return RecitationModel(
       id: map['id'] as int,
       tenantId: map['tenant_id'] as int,
-      recitedAt: DateTime.parse(map['recited_at'] as String),
+      recitedAt: DateTimeX.parse(map['recited_at'] as String),
       rewayah:
           QuranRewayaExtension.fromString(map['rewayah'] as String) ??
           QuranRewaya.hafsAnAsim,
@@ -90,7 +90,7 @@ class RecitationModel {
     return {
       'id': id,
       'tenant_id': tenantId,
-      'recited_at': recitedAt.toIso8601String(),
+      'recited_at': recitedAt.toIso8601StringWithoutMilliseconds(),
       'rewayah': rewayah.name,
       'q_part': qPart,
       'surah_number': surahNumber,

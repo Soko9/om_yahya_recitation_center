@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:om_yahya_recitation_center/app/models/recitation_model.dart';
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
+import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_common_ffi.dart';
 
@@ -74,9 +75,23 @@ abstract final class DbService {
     return tenantsMaps.map(TenantModel.fromMap).toList();
   }
 
-  static Future<List<RecitationModel>> recitationsForTenant(
-    int tenantId,
-  ) async {
+  static Future<List<RecitationModel>> recitationsByDate(DateTime date) async {
+    final db = await _database;
+
+    final List<Map<String, dynamic>> recitationsMaps = await db.rawQuery(
+      '''
+        SELECT * FROM $_recitationsTableName
+        LEFT JOIN $_tenantsTableName
+        ON $_recitationsTableName.tenant_id = $_tenantsTableName.id
+        WHERE recited_at = ?
+      ''',
+      [date.toIso8601StringWithoutMilliseconds()],
+    );
+
+    return recitationsMaps.map(RecitationModel.fromMap).toList();
+  }
+
+  static Future<List<RecitationModel>> recitationsByTenant(int tenantId) async {
     final db = await _database;
 
     final List<Map<String, dynamic>> recitationsMaps = await db.rawQuery(
@@ -132,5 +147,11 @@ abstract final class DbService {
       where: 'id = ?',
       whereArgs: [recitationId],
     );
+  }
+
+  static Future<void> clearDb() async {
+    final db = await _database;
+    await db.delete(_tenantsTableName);
+    await db.delete(_recitationsTableName);
   }
 }

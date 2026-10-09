@@ -37,11 +37,11 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
   Future<void> _loadRecitations() async {
     _setLoading(true);
     try {
-      final tenants = await DbService.recitationsForTenant(widget.tenant.id);
+      final recitations = await DbService.recitationsByTenant(widget.tenant.id);
       setState(() {
         _recitations
           ..clear()
-          ..addAll(tenants);
+          ..addAll(recitations);
       });
     } on Exception catch (_) {
       //! ADD ERROR HANDELING
@@ -76,8 +76,11 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
       appBar: AppBar(
         title: Text(widget.tenant.fullName, style: AppTextStyles.title()),
       ),
+      floatingActionButtonLocation: .startFloat,
       floatingActionButton: FloatingActionButton(
         onPressed: _addRecitation,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: .circular(4)),
         child: const Icon(Icons.add),
       ),
       body: _isLoading

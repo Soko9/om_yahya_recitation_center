@@ -5,6 +5,7 @@ import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
 extension IntX on int {
   Duration get sec => Duration(seconds: this);
   Duration get ms => Duration(milliseconds: this);
+  Duration get day => Duration(days: this);
 }
 
 extension ContextX on BuildContext {
@@ -23,6 +24,14 @@ extension DateTimeX on DateTime {
   String toIso8601StringWithoutMilliseconds() {
     return toIso8601String().split('T').first.replaceAll('-', '/');
   }
+
+  bool isEqual(DateTime other) => day == other.day && month == other.month;
+
+  static DateTime parse(String str) => DateTime(
+    int.parse(str.split('/')[0]),
+    int.parse(str.split('/')[1]),
+    int.parse(str.split('/')[2]),
+  );
 }
 
 extension TenantX on TenantModel {

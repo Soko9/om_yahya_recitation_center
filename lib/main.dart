@@ -4,9 +4,21 @@ import 'package:om_yahya_recitation_center/app/screens/splash_screen.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_theme.dart';
 
+//> MAKE WEEKDAY PICKER DAYS COLORED
+
+//> MAKE NEW TILE WIDGETS FOR EACH SECTION
+//>> (TENANTS, RECITATION_BY_DATE, RECITATION_BY_TENANT)
+
+//> MAKE CREATE TENANT BOTTOM SHEET
+
+//> MAKE CREATE RECITATION BOTTOM SHEET
+
+//> CENTERALIZE LOADING WIDGET
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DbService.init();
+  // await DbService.clearDb();
   runApp(const MainApp());
 }
 

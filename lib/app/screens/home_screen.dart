@@ -1,10 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
+import 'package:om_yahya_recitation_center/app/models/recitation_model.dart';
+import 'package:om_yahya_recitation_center/app/screens/tenants_screen.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
 import 'package:om_yahya_recitation_center/app/widgets/app_divider.dart';
-import 'package:om_yahya_recitation_center/app/widgets/tenant_tile.dart';
+import 'package:om_yahya_recitation_center/app/widgets/recitation_tile.dart';
+import 'package:om_yahya_recitation_center/app/widgets/weekday_picker.dart';
+import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_text_styles.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,22 +25,30 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  final List<TenantModel> _tenants = [];
+  DateTime _selectedDate = DateTime.now();
+  Future<void> _setDate(DateTime date) async {
+    setState(() {
+      _selectedDate = date;
+    });
+    await _loadRecitations();
+  }
+
+  final List<RecitationModel> _recitations = [];
 
   @override
   void initState() {
     super.initState();
-    unawaited(_loadTenants());
+    unawaited(_loadRecitations());
   }
 
-  Future<void> _loadTenants() async {
+  Future<void> _loadRecitations() async {
     _setLoading(true);
     try {
-      final tenants = await DbService.tenants();
+      final recitations = await DbService.recitationsByDate(_selectedDate);
       setState(() {
-        _tenants
+        _recitations
           ..clear()
-          ..addAll(tenants);
+          ..addAll(recitations);
       });
     } on Exception catch (_) {
       //! ADD ERROR HANDELING
@@ -46,40 +57,43 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _addTenant() async {
-    final newTenant = TenantModel(
-      id: DateTime.now().millisecondsSinceEpoch,
-      firstName: 'أحمد',
-      middleName: 'محمد',
-      lastName: 'خالد',
-      joinedAt: DateTime.now(),
-    );
-
-    await DbService.insertTenant(newTenant);
-    await _loadTenants();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButtonLocation: .startFloat,
       floatingActionButton: FloatingActionButton(
-        onPressed: _addTenant,
-        child: const Icon(Icons.add),
+        onPressed: () async {
+          await context.push(const TenantsScreen());
+        },
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: .circular(4)),
+        child: const Icon(Icons.title),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _tenants.isEmpty
-          ? Center(
-              child: Text('لا يوجد طلاب حاليا', style: AppTextStyles.body()),
+      body: Column(
+        children: [
+          WeekdayPicker(selectedDate: _selectedDate, callback: _setDate),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_recitations.isEmpty)
+            Center(
+              child: Text(
+                'لا يوجد تسميعات لهذا اليوم',
+                style: AppTextStyles.body(),
+              ),
             )
-          : ListView.separated(
-              itemCount: _tenants.length,
-              separatorBuilder: (context, index) => const AppDivider(),
-              itemBuilder: (context, index) {
-                final tenant = _tenants[index];
-                return TenantTile(tenant: tenant);
-              },
+          else
+            Expanded(
+              child: ListView.separated(
+                itemCount: _recitations.length,
+                separatorBuilder: (context, index) => const AppDivider(),
+                itemBuilder: (context, index) {
+                  final recitation = _recitations[index];
+                  return RecitationTile(recitation: recitation, index: index);
+                },
+              ),
             ),
+        ],
+      ),
     );
   }
 }
