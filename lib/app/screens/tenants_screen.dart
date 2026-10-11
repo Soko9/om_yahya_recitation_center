@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:om_yahya_recitation_center/app/models/surah_model.dart';
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
+import 'package:om_yahya_recitation_center/app/screens/recitations_screen.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
-import 'package:om_yahya_recitation_center/app/widgets/tenant_tile.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_tile.dart';
+import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_text_styles.dart';
 
@@ -88,9 +91,45 @@ class _TenantsScreenState extends State<TenantsScreen> {
               itemCount: _tenants.length,
               itemBuilder: (context, index) {
                 final tenant = _tenants[index];
-                return TenantTile(tenant: tenant);
+                return _buildTile(tenant, context);
               },
             ),
+    );
+  }
+
+  Widget _buildTile(TenantModel tenant, BuildContext context) {
+    return AppTile(
+      title: tenant.fullName,
+      subtitle:
+          'انضم في  ${tenant.joinedAt.toIso8601StringWithoutMilliseconds().toArabicNumbers()}',
+      qTitles: const ['آخر  سورة', 'آخر  جزء', 'آخر  آية'],
+      qValues: [
+        SurahModel.surahs
+            .where((s) => s.number == tenant.latestSurahNumber)
+            .single
+            .name,
+        tenant.latestQPart,
+        tenant.latestQVerse,
+      ],
+      onTap: () async {
+        await context.push(RecitationsScreen(tenant: tenant));
+      },
+      floatingWidget: Container(
+        padding: const .all(24),
+        decoration: BoxDecoration(
+          color: (tenant.avgScoreFromHundred <= 59
+              ? AppColors.red
+              : tenant.avgScoreFromHundred <= 79
+              ? AppColors.orange
+              : AppColors.green),
+          shape: .circle,
+          boxShadow: const [BoxShadow(offset: Offset(6, 6))],
+        ),
+        child: Text(
+          '100  /  ${tenant.avgScoreFromHundred}'.toArabicNumbers(),
+          style: AppTextStyles.title(color: AppColors.background),
+        ),
+      ),
     );
   }
 }

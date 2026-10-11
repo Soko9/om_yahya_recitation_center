@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:om_yahya_recitation_center/app/models/recitation_model.dart';
+import 'package:om_yahya_recitation_center/app/models/surah_model.dart';
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
-import 'package:om_yahya_recitation_center/app/widgets/app_divider.dart';
-import 'package:om_yahya_recitation_center/app/widgets/recitation_tile.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_tile.dart';
 import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
+import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_text_styles.dart';
 
 class RecitationsScreen extends StatefulWidget {
@@ -89,14 +90,50 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
           ? Center(
               child: Text('لا يوجد تسميعات حاليا', style: AppTextStyles.body()),
             )
-          : ListView.separated(
+          : ListView.builder(
               itemCount: _recitations.length,
-              separatorBuilder: (context, index) => const AppDivider(),
               itemBuilder: (context, index) {
                 final recitation = _recitations[index];
-                return RecitationTile(recitation: recitation, index: index);
+                return _buildTile(recitation, context);
               },
             ),
+    );
+  }
+
+  Widget _buildTile(RecitationModel recitation, BuildContext context) {
+    final avgScore =
+        (recitation.memoryScore +
+            recitation.reciteScore +
+            recitation.tajweedScore) ~/
+        3;
+
+    return AppTile(
+      subtitle:
+          '${SurahModel.surahs.where((s) => s.number == recitation.surahNumber).single.name} :   من ${recitation.startQVerse}  إلى  ${recitation.endQVerse}\nرواية :  ${recitation.rewayah.arabicLabel}\nفي :  ${recitation.recitedAt.toIso8601StringWithoutMilliseconds()}'
+              .toArabicNumbers(),
+      qTitles: const ['حفظ', 'تلاوة', 'أحكام'],
+      qValues: [
+        recitation.memoryScore,
+        recitation.reciteScore,
+        recitation.tajweedScore,
+      ],
+      onTap: () {},
+      floatingWidget: Container(
+        padding: const .all(24),
+        decoration: BoxDecoration(
+          color: (avgScore <= 5
+              ? AppColors.red
+              : avgScore <= 8
+              ? AppColors.orange
+              : AppColors.green),
+          shape: .circle,
+          boxShadow: const [BoxShadow(offset: Offset(6, 6))],
+        ),
+        child: Text(
+          '10  /  $avgScore'.toArabicNumbers(),
+          style: AppTextStyles.title(color: AppColors.background),
+        ),
+      ),
     );
   }
 }

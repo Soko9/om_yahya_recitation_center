@@ -22,7 +22,8 @@ extension ContextX on BuildContext {
 
 extension DateTimeX on DateTime {
   String toIso8601StringWithoutMilliseconds() {
-    return toIso8601String().split('T').first.replaceAll('-', '/');
+    final date = toIso8601String().split('T').first;
+    return '${date.split('-')[2]}  -  ${date.split('-')[1]}  -  ${date.split('-')[0]}';
   }
 
   bool isEqual(DateTime other) => day == other.day && month == other.month;
