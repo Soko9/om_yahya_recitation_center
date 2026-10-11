@@ -8,6 +8,7 @@ import 'package:om_yahya_recitation_center/app/widgets/app_divider.dart';
 import 'package:om_yahya_recitation_center/app/widgets/recitation_tile.dart';
 import 'package:om_yahya_recitation_center/app/widgets/weekday_picker.dart';
 import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
+import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_text_styles.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -66,8 +67,13 @@ class _HomeScreenState extends State<HomeScreen> {
           await context.push(const TenantsScreen());
         },
         elevation: 0,
+        backgroundColor: AppColors.indigo,
         shape: RoundedRectangleBorder(borderRadius: .circular(4)),
-        child: const Icon(Icons.title),
+        child: const Icon(
+          Icons.groups_rounded,
+          size: 42,
+          color: AppColors.background,
+        ),
       ),
       body: Column(
         children: [

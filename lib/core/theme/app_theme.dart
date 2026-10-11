@@ -10,6 +10,8 @@ abstract final class AppTheme {
     appBarTheme: const AppBarTheme(
       elevation: 0,
       backgroundColor: AppColors.background,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: AppColors.background,
     ),
   );
 }
