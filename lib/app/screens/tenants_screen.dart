@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:om_yahya_recitation_center/app/models/surah_model.dart';
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
+import 'package:om_yahya_recitation_center/app/screens/add_tenant_sheet.dart';
 import 'package:om_yahya_recitation_center/app/screens/recitations_screen.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_fab.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_loader.dart';
 import 'package:om_yahya_recitation_center/app/widgets/app_tile.dart';
 import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
@@ -50,16 +53,20 @@ class _TenantsScreenState extends State<TenantsScreen> {
   }
 
   Future<void> _addTenant() async {
-    final newTenant = TenantModel(
-      id: DateTime.now().millisecondsSinceEpoch,
-      firstName: 'أحمد',
-      middleName: 'محمد',
-      lastName: 'خالد',
-      joinedAt: DateTime.now(),
+    final isBack = await showModalBottomSheet<bool>(
+      context: context,
+      elevation: 0,
+      isScrollControlled: true,
+      isDismissible: false,
+      showDragHandle: false,
+      enableDrag: false,
+      barrierColor: Colors.black87,
+      backgroundColor: AppColors.background,
+      shape: RoundedRectangleBorder(borderRadius: .circular(4)),
+      builder: (context) => const AddTenantSheet(),
     );
 
-    await DbService.insertTenant(newTenant);
-    await _loadTenants();
+    if (isBack != null && isBack) await _loadTenants();
   }
 
   @override
@@ -68,31 +75,27 @@ class _TenantsScreenState extends State<TenantsScreen> {
       appBar: AppBar(
         title: Text('الطلاب', style: AppTextStyles.title()),
         actionsPadding: const .all(8),
-        actions: [
-          FloatingActionButton(
-            onPressed: _addTenant,
-            elevation: 0,
-            backgroundColor: AppColors.indigo,
-            shape: RoundedRectangleBorder(borderRadius: .circular(4)),
-            child: const Icon(
-              Icons.person_add_rounded,
-              color: AppColors.background,
-            ),
-          ),
-        ],
+        actions: [AppFab(callback: _addTenant, icon: Icons.person_add_rounded)],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: AppLoader())
           : _tenants.isEmpty
           ? Center(
               child: Text('لا يوجد طلاب حاليا', style: AppTextStyles.body()),
             )
-          : ListView.builder(
-              itemCount: _tenants.length,
-              itemBuilder: (context, index) {
-                final tenant = _tenants[index];
-                return _buildTile(tenant, context);
-              },
+          : RefreshIndicator(
+              color: AppColors.indigo,
+              backgroundColor: AppColors.background,
+              strokeWidth: 4,
+              elevation: 0,
+              onRefresh: _loadTenants,
+              child: ListView.builder(
+                itemCount: _tenants.length,
+                itemBuilder: (context, index) {
+                  final tenant = _tenants[index];
+                  return _buildTile(tenant, context);
+                },
+              ),
             ),
     );
   }

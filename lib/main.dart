@@ -4,19 +4,12 @@ import 'package:om_yahya_recitation_center/app/screens/splash_screen.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_theme.dart';
 
-//> MAKE WEEKDAY PICKER DAYS COLORED
-
-//> MAKE NEW TILE WIDGETS FOR EACH SECTION
-//>> (RECITATION_BY_DATE, RECITATION_BY_TENANT)
-
-//> MAKE CREATE TENANT BOTTOM SHEET
-
-//> MAKE CREATE RECITATION BOTTOM SHEET
-
-//> CENTERALIZE LOADING WIDGET
+//> ADD ERROR FOR [END VERSE]
+//> MODIFY COLORS AND WIDTHS OF SLIDERS
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await DbService.init();
   // await DbService.clearDb();
   runApp(const MainApp());
@@ -31,8 +24,8 @@ class MainApp extends StatelessWidget {
       title: 'Om Yahya Recitation Center',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      locale: const Locale('ar'),
-      supportedLocales: const [Locale('ar')],
+      locale: const Locale('ar', 'EG'),
+      supportedLocales: const [Locale('ar', 'EG')],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

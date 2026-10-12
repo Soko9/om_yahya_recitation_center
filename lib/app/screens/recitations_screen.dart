@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:om_yahya_recitation_center/app/models/recitation_model.dart';
 import 'package:om_yahya_recitation_center/app/models/surah_model.dart';
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
+import 'package:om_yahya_recitation_center/app/screens/add_recitation_sheet.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_fab.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_loader.dart';
 import 'package:om_yahya_recitation_center/app/widgets/app_tile.dart';
 import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
@@ -52,23 +55,20 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
   }
 
   Future<void> _addRecitation() async {
-    final newRecitation = RecitationModel(
-      id: DateTime.now().millisecondsSinceEpoch,
-      tenantId: widget.tenant.id,
-      qPart: 2,
-      rewayah: QuranRewaya.ibnDhakwanAnIbnAmir,
-      recitedAt: DateTime.now(),
-      surahNumber: 2,
-      startQVerse: 12,
-      endQVerse: 134,
-      memoryScore: 7,
-      reciteScore: 8,
-      tajweedScore: 8,
-      tenant: widget.tenant,
+    final isBack = await showModalBottomSheet<bool>(
+      context: context,
+      elevation: 0,
+      isScrollControlled: true,
+      isDismissible: false,
+      showDragHandle: false,
+      enableDrag: false,
+      barrierColor: Colors.black87,
+      backgroundColor: AppColors.background,
+      shape: RoundedRectangleBorder(borderRadius: .circular(4)),
+      builder: (context) => AddRecitationSheet(tenant: widget.tenant),
     );
 
-    await DbService.insertRecitation(newRecitation);
-    await _loadRecitations();
+    if (isBack != null && isBack) await _loadRecitations();
   }
 
   @override
@@ -78,24 +78,29 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
         title: Text(widget.tenant.fullName, style: AppTextStyles.title()),
       ),
       floatingActionButtonLocation: .startFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addRecitation,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: .circular(4)),
-        child: const Icon(Icons.add),
+      floatingActionButton: AppFab(
+        callback: _addRecitation,
+        icon: Icons.bookmark_add_rounded,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: AppLoader())
           : _recitations.isEmpty
           ? Center(
               child: Text('لا يوجد تسميعات حاليا', style: AppTextStyles.body()),
             )
-          : ListView.builder(
-              itemCount: _recitations.length,
-              itemBuilder: (context, index) {
-                final recitation = _recitations[index];
-                return _buildTile(recitation, context);
-              },
+          : RefreshIndicator(
+              color: AppColors.indigo,
+              backgroundColor: AppColors.background,
+              strokeWidth: 4,
+              elevation: 0,
+              onRefresh: _loadRecitations,
+              child: ListView.builder(
+                itemCount: _recitations.length,
+                itemBuilder: (context, index) {
+                  final recitation = _recitations[index];
+                  return _buildTile(recitation, context);
+                },
+              ),
             ),
     );
   }
@@ -117,7 +122,6 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
         recitation.reciteScore,
         recitation.tajweedScore,
       ],
-      onTap: () {},
       floatingWidget: Container(
         padding: const .all(24),
         decoration: BoxDecoration(

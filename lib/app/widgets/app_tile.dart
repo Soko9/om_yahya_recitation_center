@@ -9,7 +9,7 @@ class AppTile extends StatelessWidget {
     required this.qTitles,
     required this.qValues,
     required this.floatingWidget,
-    required this.onTap,
+    this.onTap,
     this.title = '',
     this.subtitle = '',
     super.key,
@@ -23,11 +23,15 @@ class AppTile extends StatelessWidget {
   final List<String> qTitles;
   final List<dynamic> qValues;
   final Widget floatingWidget;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     const clipper = CustomTileClipper(radius: 12);
+    final backColor = onTap == null
+        ? AppColors.softContainer
+        : AppColors.container;
+    const frontColor = AppColors.indigo;
 
     return Padding(
       padding: const .all(24),
@@ -42,57 +46,58 @@ class AppTile extends StatelessWidget {
                 child: ClipPath(
                   clipper: clipper,
                   child: ColoredBox(
-                    color: AppColors.amber,
+                    color: backColor,
                     child: Column(
                       crossAxisAlignment: .start,
                       children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const .symmetric(
-                              vertical: 12,
-                              horizontal: 18,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: .center,
-                              crossAxisAlignment: .start,
-                              spacing: 12,
-                              children: [
-                                if (title.isNotEmpty)
-                                  Text(
+                        Padding(
+                          padding: const .all(12),
+                          child: Column(
+                            mainAxisAlignment: .center,
+                            crossAxisAlignment: .start,
+                            mainAxisSize: .min,
+                            spacing: 12,
+                            children: [
+                              if (title.isNotEmpty)
+                                FractionallySizedBox(
+                                  alignment: .centerStart,
+                                  widthFactor: .65,
+                                  child: Text(
                                     title,
                                     maxLines: 2,
                                     style: AppTextStyles.title(),
                                   ),
-                                if (subtitle.isNotEmpty)
-                                  Text(
-                                    subtitle,
-                                    style: AppTextStyles.title(size: 18),
-                                  ),
-                              ],
-                            ),
+                                ),
+                              if (subtitle.isNotEmpty)
+                                Text(
+                                  subtitle,
+                                  style: AppTextStyles.title(size: 18)
+                                      .copyWith(height: 1.5),
+                                ),
+                            ],
                           ),
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: const .symmetric(horizontal: 12),
-                            child: Row(
-                              spacing: 12,
-                              children: [
-                                for (var i = 0; i < qTitles.length; i++) ...[
-                                  if (i > 0)
-                                    Container(
-                                      width: .5,
-                                      height: 32,
-                                      color: AppColors.indigo.withValues(
-                                        alpha: .5,
-                                      ),
-                                    ),
-                                  Expanded(
-                                    child: _buildStat(qTitles[i], qValues[i]),
+                        Padding(
+                          padding: const .all(12),
+                          child: Row(
+                            spacing: 12,
+                            children: [
+                              for (var i = 0; i < qTitles.length; i++) ...[
+                                if (i > 0)
+                                  Container(
+                                    width: .5,
+                                    height: 32,
+                                    color: frontColor.withValues(alpha: .5),
                                   ),
-                                ],
+                                Expanded(
+                                  child: _buildStat(
+                                    qTitles[i],
+                                    qValues[i],
+                                    frontColor,
+                                  ),
+                                ),
                               ],
-                            ),
+                            ],
                           ),
                         ),
                       ],
@@ -107,13 +112,19 @@ class AppTile extends StatelessWidget {
     );
   }
 
-  Widget _buildStat(String title, dynamic value) {
+  Widget _buildStat(String title, dynamic value, Color color) {
     return Column(
       mainAxisSize: .min,
       spacing: 6,
       children: [
-        Text(title, style: AppTextStyles.body(weight: .bold)),
-        Text('$value'.toArabicNumbers(), style: AppTextStyles.body()),
+        Text(
+          title,
+          style: AppTextStyles.body(weight: .bold, color: color),
+        ),
+        Text(
+          '$value'.toArabicNumbers(),
+          style: AppTextStyles.body(color: color),
+        ),
       ],
     );
   }

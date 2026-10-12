@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:om_yahya_recitation_center/app/models/tenant_model.dart';
 import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 
@@ -67,7 +69,9 @@ class RecitationModel {
       memoryScore: map['memory_score'] as int,
       notes: map['notes'] as String?,
       tenant: map['tenant'] != null
-          ? TenantModel.fromMap(map['tenant'] as Map<String, dynamic>)
+          ? TenantModel.fromMap(
+              jsonDecode(map['tenant'] as String) as Map<String, dynamic>,
+            )
           : null,
     );
   }
@@ -90,7 +94,7 @@ class RecitationModel {
     return {
       'id': id,
       'tenant_id': tenantId,
-      'recited_at': recitedAt.toIso8601StringWithoutMilliseconds(),
+      'recited_at': recitedAt.toIsoMap,
       'rewayah': rewayah.name,
       'q_part': qPart,
       'surah_number': surahNumber,

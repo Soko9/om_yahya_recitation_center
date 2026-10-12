@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:om_yahya_recitation_center/app/models/recitation_model.dart';
+import 'package:om_yahya_recitation_center/app/models/surah_model.dart';
 import 'package:om_yahya_recitation_center/app/screens/tenants_screen.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
-import 'package:om_yahya_recitation_center/app/widgets/app_divider.dart';
-import 'package:om_yahya_recitation_center/app/widgets/recitation_tile.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_fab.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_loader.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_tile.dart';
 import 'package:om_yahya_recitation_center/app/widgets/weekday_picker.dart';
 import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
@@ -62,43 +64,82 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButtonLocation: .startFloat,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
+      floatingActionButton: AppFab(
+        callback: () async {
           await context.push(const TenantsScreen());
         },
-        elevation: 0,
-        backgroundColor: AppColors.indigo,
-        shape: RoundedRectangleBorder(borderRadius: .circular(4)),
-        child: const Icon(
-          Icons.groups_rounded,
-          size: 42,
-          color: AppColors.background,
-        ),
+        icon: Icons.groups_rounded,
       ),
       body: Column(
         children: [
-          WeekdayPicker(selectedDate: _selectedDate, callback: _setDate),
+          AbsorbPointer(
+            absorbing: _isLoading,
+            child: WeekdayPicker(
+              selectedDate: _selectedDate,
+              callback: _setDate,
+            ),
+          ),
           if (_isLoading)
-            const Center(child: CircularProgressIndicator())
+            const Expanded(child: Center(child: AppLoader()))
           else if (_recitations.isEmpty)
-            Center(
-              child: Text(
-                'لا يوجد تسميعات لهذا اليوم',
-                style: AppTextStyles.body(),
+            Expanded(
+              child: Center(
+                child: Text(
+                  'لا يوجد تسميعات لهذا اليوم',
+                  style: AppTextStyles.body(),
+                ),
               ),
             )
           else
             Expanded(
-              child: ListView.separated(
-                itemCount: _recitations.length,
-                separatorBuilder: (context, index) => const AppDivider(),
-                itemBuilder: (context, index) {
-                  final recitation = _recitations[index];
-                  return RecitationTile(recitation: recitation, index: index);
-                },
+              child: RefreshIndicator(
+                color: AppColors.indigo,
+                backgroundColor: AppColors.background,
+                strokeWidth: 4,
+                elevation: 0,
+                onRefresh: _loadRecitations,
+                child: ListView.builder(
+                  itemCount: _recitations.length,
+                  itemBuilder: (context, index) {
+                    final recitation = _recitations[index];
+                    return _buildTile(recitation, context);
+                  },
+                ),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTile(RecitationModel recitation, BuildContext context) {
+    final avgScore =
+        (recitation.memoryScore +
+            recitation.reciteScore +
+            recitation.tajweedScore) ~/
+        3;
+
+    return AppTile(
+      subtitle:
+          '${SurahModel.surahs.where((s) => s.number == recitation.surahNumber).single.name}   -   من ${recitation.startQVerse}  إلى  ${recitation.endQVerse}\nرواية   -   ${recitation.rewayah.arabicLabel}'
+              .toArabicNumbers(),
+      qTitles: const ['الطالب'],
+      qValues: [recitation.tenant?.fullName],
+      floatingWidget: Container(
+        padding: const .all(24),
+        decoration: BoxDecoration(
+          color: (avgScore <= 5
+              ? AppColors.red
+              : avgScore <= 8
+              ? AppColors.orange
+              : AppColors.green),
+          shape: .circle,
+          boxShadow: const [BoxShadow(offset: Offset(6, 6))],
+        ),
+        child: Text(
+          '10  /  $avgScore'.toArabicNumbers(),
+          style: AppTextStyles.title(color: AppColors.background),
+        ),
       ),
     );
   }

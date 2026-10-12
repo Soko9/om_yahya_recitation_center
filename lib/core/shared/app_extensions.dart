@@ -6,6 +6,22 @@ extension IntX on int {
   Duration get sec => Duration(seconds: this);
   Duration get ms => Duration(milliseconds: this);
   Duration get day => Duration(days: this);
+
+  List<String> get _weekdays => [
+    'الاثنين',
+    'الثلاثاء',
+    'الأربعاء',
+    'الخميس',
+    'الجمعة',
+    'السبت',
+    'الأحد',
+  ];
+
+  String get weekday => _weekdays[this - 1];
+}
+
+extension DurationX on Duration {
+  Future<void> wait() async => await Future<dynamic>.delayed(this);
 }
 
 extension ContextX on BuildContext {
@@ -17,7 +33,10 @@ extension ContextX on BuildContext {
       Navigator.of(this)
           .pushReplacement(MaterialPageRoute<dynamic>(builder: (_) => screen));
 
-  void pop() => Navigator.of(this).pop();
+  void pop<T extends Object?>([T? result]) => Navigator.of(this).pop();
+
+  double get sh => MediaQuery.sizeOf(this).height;
+  double get sw => MediaQuery.sizeOf(this).width;
 }
 
 extension DateTimeX on DateTime {
@@ -26,12 +45,14 @@ extension DateTimeX on DateTime {
     return '${date.split('-')[2]}  -  ${date.split('-')[1]}  -  ${date.split('-')[0]}';
   }
 
+  String get toIsoMap => toIso8601String().split('T').first;
+
   bool isEqual(DateTime other) => day == other.day && month == other.month;
 
   static DateTime parse(String str) => DateTime(
-    int.parse(str.split('/')[0]),
-    int.parse(str.split('/')[1]),
-    int.parse(str.split('/')[2]),
+    int.parse(str.split('-')[0]),
+    int.parse(str.split('-')[1]),
+    int.parse(str.split('-')[2]),
   );
 }
 

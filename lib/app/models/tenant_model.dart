@@ -1,3 +1,5 @@
+import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
+
 class TenantModel {
   const new({
     required this.id,
@@ -41,7 +43,7 @@ class TenantModel {
       'first_name': firstName,
       'middle_name': middleName,
       'last_name': lastName,
-      'joined_at': joinedAt.toIso8601String(),
+      'joined_at': joinedAt.toIsoMap,
       'avg_score_from_hundred': avgScoreFromHundred,
       'latest_surah_number': latestSurahNumber,
       'latest_q_part': latestQPart,

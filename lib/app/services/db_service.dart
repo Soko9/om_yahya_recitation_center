@@ -71,7 +71,7 @@ abstract final class DbService {
     final List<Map<String, dynamic>> tenantsMaps = await db.query(
       _tenantsTableName,
     );
-
+    await 1.sec.wait();
     return tenantsMaps.map(TenantModel.fromMap).toList();
   }
 
@@ -80,14 +80,28 @@ abstract final class DbService {
 
     final List<Map<String, dynamic>> recitationsMaps = await db.rawQuery(
       '''
-        SELECT * FROM $_recitationsTableName
-        LEFT JOIN $_tenantsTableName
-        ON $_recitationsTableName.tenant_id = $_tenantsTableName.id
+        SELECT r.*, 
+        CASE
+        WHEN t.id IS NULL THEN NULL
+          ELSE json_object(
+            'id', t.id,
+            'first_name', t.first_name,
+            'middle_name', t.middle_name,
+            'last_name', t.last_name,
+            'joined_at', t.joined_at,
+            'avg_score_from_hundred', t.avg_score_from_hundred,
+            'latest_surah_number', t.latest_surah_number,
+            'latest_q_part', t.latest_q_part,
+            'latest_q_verse', t.latest_q_verse
+          )
+        END AS tenant FROM $_recitationsTableName as r
+        LEFT JOIN $_tenantsTableName as t
+        ON r.tenant_id = t.id
         WHERE recited_at = ?
       ''',
-      [date.toIso8601StringWithoutMilliseconds()],
+      [date.toIsoMap],
     );
-
+    await 2.sec.wait();
     return recitationsMaps.map(RecitationModel.fromMap).toList();
   }
 
@@ -103,7 +117,7 @@ abstract final class DbService {
       ''',
       [tenantId],
     );
-
+    await 2.sec.wait();
     return recitationsMaps.map(RecitationModel.fromMap).toList();
   }
 
@@ -118,11 +132,15 @@ abstract final class DbService {
 
   static Future<void> insertRecitation(RecitationModel recitation) async {
     final db = await _database;
-    await db.insert(
-      _recitationsTableName,
-      recitation.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.transaction((txn) async {
+      await txn.insert(
+        _recitationsTableName,
+        recitation.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      await _refreshTenantStats(txn, recitation.tenantId);
+    });
   }
 
   static Future<void> updateTenant(TenantModel tenant) async {
@@ -142,10 +160,69 @@ abstract final class DbService {
 
   static Future<void> deleteRecitation(int recitationId) async {
     final db = await _database;
-    await db.delete(
+    await db.transaction((txn) async {
+      final result = await txn.query(
+        _recitationsTableName,
+        columns: ['tenant_id'],
+        where: 'id = ?',
+        whereArgs: [recitationId],
+        limit: 1,
+      );
+
+      if (result.isEmpty) return;
+
+      final tenantId = result.first['tenant_id']! as int;
+
+      await txn.delete(
+        _recitationsTableName,
+        where: 'id = ?',
+        whereArgs: [recitationId],
+      );
+
+      await _refreshTenantStats(txn, tenantId);
+    });
+  }
+
+  static Future<void> _refreshTenantStats(
+    DatabaseExecutor db,
+    int tenantId,
+  ) async {
+    final scoreResult = await db.rawQuery(
+      '''
+    SELECT ROUND(
+      AVG(
+        (recite_score + tajweed_score + memory_score) * 100.0 / 30
+      )
+    ) AS avg_score
+    FROM $_recitationsTableName
+    WHERE tenant_id = ?
+    ''',
+      [tenantId],
+    );
+
+    final avgScore = scoreResult.first['avg_score'] as double? ?? 0;
+
+    final latestResult = await db.query(
       _recitationsTableName,
+      columns: ['surah_number', 'q_part', 'end_q_verse'],
+      where: 'tenant_id = ?',
+      whereArgs: [tenantId],
+      orderBy: 'recited_at DESC, id DESC',
+      limit: 1,
+    );
+
+    final latest = latestResult.isEmpty ? null : latestResult.first;
+
+    await db.update(
+      _tenantsTableName,
+      {
+        'avg_score_from_hundred': avgScore,
+        'latest_surah_number': latest?['surah_number'] ?? 1,
+        'latest_q_part': latest?['q_part'] ?? 1,
+        'latest_q_verse': latest?['end_q_verse'] ?? 1,
+      },
       where: 'id = ?',
-      whereArgs: [recitationId],
+      whereArgs: [tenantId],
     );
   }
 
