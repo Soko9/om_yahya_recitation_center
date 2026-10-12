@@ -62,10 +62,14 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
       isDismissible: false,
       showDragHandle: false,
       enableDrag: false,
+      useSafeArea: true,
       barrierColor: Colors.black87,
       backgroundColor: AppColors.background,
       shape: RoundedRectangleBorder(borderRadius: .circular(4)),
-      builder: (context) => AddRecitationSheet(tenant: widget.tenant),
+      builder: (context) => Padding(
+        padding: .only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: AddRecitationSheet(tenant: widget.tenant),
+      ),
     );
 
     if (isBack != null && isBack) await _loadRecitations();
@@ -82,26 +86,31 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
         callback: _addRecitation,
         icon: Icons.bookmark_add_rounded,
       ),
-      body: _isLoading
-          ? const Center(child: AppLoader())
-          : _recitations.isEmpty
-          ? Center(
-              child: Text('لا يوجد تسميعات حاليا', style: AppTextStyles.body()),
-            )
-          : RefreshIndicator(
-              color: AppColors.indigo,
-              backgroundColor: AppColors.background,
-              strokeWidth: 4,
-              elevation: 0,
-              onRefresh: _loadRecitations,
-              child: ListView.builder(
-                itemCount: _recitations.length,
-                itemBuilder: (context, index) {
-                  final recitation = _recitations[index];
-                  return _buildTile(recitation, context);
-                },
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: AppLoader())
+            : _recitations.isEmpty
+            ? Center(
+                child: Text(
+                  'لا يوجد تسميعات حاليا',
+                  style: AppTextStyles.body(),
+                ),
+              )
+            : RefreshIndicator(
+                color: AppColors.indigo,
+                backgroundColor: AppColors.background,
+                strokeWidth: 4,
+                elevation: 0,
+                onRefresh: _loadRecitations,
+                child: ListView.builder(
+                  itemCount: _recitations.length,
+                  itemBuilder: (context, index) {
+                    final recitation = _recitations[index];
+                    return _buildTile(recitation, context);
+                  },
+                ),
               ),
-            ),
+      ),
     );
   }
 

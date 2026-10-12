@@ -282,6 +282,7 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
                     .singleWhere((s) => s.number == _surahNumber)
                     .numberOfVerses
                     .toString();
+                _setErrorEnd(false);
               },
               child: const Icon(
                 Icons.done_all_outlined,

@@ -70,44 +70,46 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         icon: Icons.groups_rounded,
       ),
-      body: Column(
-        children: [
-          AbsorbPointer(
-            absorbing: _isLoading,
-            child: WeekdayPicker(
-              selectedDate: _selectedDate,
-              callback: _setDate,
-            ),
+      body: SafeArea(
+        child: RefreshIndicator(
+          color: AppColors.indigo,
+          backgroundColor: AppColors.background,
+          strokeWidth: 4,
+          elevation: 0,
+          onRefresh: _loadRecitations,
+          child: Column(
+            children: [
+              AbsorbPointer(
+                absorbing: _isLoading,
+                child: WeekdayPicker(
+                  selectedDate: _selectedDate,
+                  callback: _setDate,
+                ),
+              ),
+              if (_isLoading)
+                const Expanded(child: Center(child: AppLoader()))
+              else if (_recitations.isEmpty)
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      'لا يوجد تسميعات لهذا اليوم',
+                      style: AppTextStyles.body(),
+                    ),
+                  ),
+                )
+              else
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _recitations.length,
+                    itemBuilder: (context, index) {
+                      final recitation = _recitations[index];
+                      return _buildTile(recitation, context);
+                    },
+                  ),
+                ),
+            ],
           ),
-          if (_isLoading)
-            const Expanded(child: Center(child: AppLoader()))
-          else if (_recitations.isEmpty)
-            Expanded(
-              child: Center(
-                child: Text(
-                  'لا يوجد تسميعات لهذا اليوم',
-                  style: AppTextStyles.body(),
-                ),
-              ),
-            )
-          else
-            Expanded(
-              child: RefreshIndicator(
-                color: AppColors.indigo,
-                backgroundColor: AppColors.background,
-                strokeWidth: 4,
-                elevation: 0,
-                onRefresh: _loadRecitations,
-                child: ListView.builder(
-                  itemCount: _recitations.length,
-                  itemBuilder: (context, index) {
-                    final recitation = _recitations[index];
-                    return _buildTile(recitation, context);
-                  },
-                ),
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }

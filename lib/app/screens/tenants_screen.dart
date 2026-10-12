@@ -60,10 +60,14 @@ class _TenantsScreenState extends State<TenantsScreen> {
       isDismissible: false,
       showDragHandle: false,
       enableDrag: false,
+      useSafeArea: true,
       barrierColor: Colors.black87,
       backgroundColor: AppColors.background,
       shape: RoundedRectangleBorder(borderRadius: .circular(4)),
-      builder: (context) => const AddTenantSheet(),
+      builder: (context) => Padding(
+        padding: .only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: const AddTenantSheet(),
+      ),
     );
 
     if (isBack != null && isBack) await _loadTenants();
@@ -77,26 +81,28 @@ class _TenantsScreenState extends State<TenantsScreen> {
         actionsPadding: const .all(8),
         actions: [AppFab(callback: _addTenant, icon: Icons.person_add_rounded)],
       ),
-      body: _isLoading
-          ? const Center(child: AppLoader())
-          : _tenants.isEmpty
-          ? Center(
-              child: Text('لا يوجد طلاب حاليا', style: AppTextStyles.body()),
-            )
-          : RefreshIndicator(
-              color: AppColors.indigo,
-              backgroundColor: AppColors.background,
-              strokeWidth: 4,
-              elevation: 0,
-              onRefresh: _loadTenants,
-              child: ListView.builder(
-                itemCount: _tenants.length,
-                itemBuilder: (context, index) {
-                  final tenant = _tenants[index];
-                  return _buildTile(tenant, context);
-                },
+      body: SafeArea(
+        child: _isLoading
+            ? const Center(child: AppLoader())
+            : _tenants.isEmpty
+            ? Center(
+                child: Text('لا يوجد طلاب حاليا', style: AppTextStyles.body()),
+              )
+            : RefreshIndicator(
+                color: AppColors.indigo,
+                backgroundColor: AppColors.background,
+                strokeWidth: 4,
+                elevation: 0,
+                onRefresh: _loadTenants,
+                child: ListView.builder(
+                  itemCount: _tenants.length,
+                  itemBuilder: (context, index) {
+                    final tenant = _tenants[index];
+                    return _buildTile(tenant, context);
+                  },
+                ),
               ),
-            ),
+      ),
     );
   }
 
