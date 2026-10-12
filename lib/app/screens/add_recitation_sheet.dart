@@ -70,32 +70,43 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
     });
   }
 
-  final GlobalKey<FormState> _fromKey = GlobalKey();
   final TextEditingController _startVerse = TextEditingController();
   final TextEditingController _endVerse = TextEditingController();
 
+  bool _errorStart = true;
+  void _setErrorStart(bool value) {
+    setState(() {
+      _errorStart = value;
+    });
+  }
+
+  bool _errorEnd = true;
+  void _setErrorEnd(bool value) {
+    setState(() {
+      _errorEnd = value;
+    });
+  }
+
   Future<void> _addRecitation() async {
-    if (_fromKey.currentState!.validate()) {
-      final newRecitation = RecitationModel(
-        id: DateTime.now().millisecondsSinceEpoch,
-        tenantId: widget.tenant.id,
-        rewayah: _rewaya,
-        recitedAt: _reciteDate,
-        surahNumber: _surahNumber,
-        qPart: _qPart,
-        startQVerse: int.parse(_startVerse.text.trim()),
-        endQVerse: int.parse(_endVerse.text.trim()),
-        memoryScore: _memoryScore,
-        reciteScore: _reciteScore,
-        tajweedScore: _tajweedScore,
-        tenant: widget.tenant,
-      );
+    final newRecitation = RecitationModel(
+      id: DateTime.now().millisecondsSinceEpoch,
+      tenantId: widget.tenant.id,
+      rewayah: _rewaya,
+      recitedAt: _reciteDate,
+      surahNumber: _surahNumber,
+      qPart: _qPart,
+      startQVerse: int.parse(_startVerse.text.trim()),
+      endQVerse: int.parse(_endVerse.text.trim()),
+      memoryScore: _memoryScore,
+      reciteScore: _reciteScore,
+      tajweedScore: _tajweedScore,
+      tenant: widget.tenant,
+    );
 
-      await DbService.insertRecitation(newRecitation);
+    await DbService.insertRecitation(newRecitation);
 
-      if (!mounted) return;
-      Navigator.pop(context, true);
-    }
+    if (!mounted) return;
+    Navigator.pop(context, true);
   }
 
   @override
@@ -111,282 +122,350 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
       height: context.sh * .85,
       child: Padding(
         padding: const .all(12),
-        child: Form(
-          key: _fromKey,
-          child: SingleChildScrollView(
-            child: Column(
-              spacing: 12,
-              crossAxisAlignment: .stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: .spaceBetween,
-                  children: [
-                    Text(
-                      'إضافة تسميع جديد',
-                      style: AppTextStyles.display(size: 32),
-                    ),
-                    Row(
-                      mainAxisSize: .min,
-                      spacing: 8,
-                      children: [
-                        IconButton.filled(
-                          onPressed: _addRecitation,
-                          style: IconButton.styleFrom(
-                            backgroundColor: AppColors.green.withValues(
-                              alpha: .6,
-                            ),
-                          ),
-                          icon: const Icon(Icons.check),
-                          iconSize: 32,
-                          color: AppColors.indigo,
-                        ),
-                        IconButton.filled(
-                          onPressed: () {
-                            Navigator.pop(context, false);
-                          },
-                          style: IconButton.styleFrom(
-                            backgroundColor: AppColors.red.withValues(
-                              alpha: .6,
-                            ),
-                          ),
-                          icon: const Icon(Icons.clear),
-                          iconSize: 32,
-                          color: AppColors.indigo,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  height: context.sh * .2,
-                  child: Column(
-                    crossAxisAlignment: .stretch,
-                    mainAxisSize: .min,
-                    spacing: 8,
-                    children: [
-                      Text('الرواية', style: AppTextStyles.body(weight: .bold)),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: Wrap(
-                            alignment: .center,
-                            runAlignment: .center,
-                            crossAxisAlignment: .center,
-                            children: QuranRewaya.values
-                                .map(_buildRewaya)
-                                .toList(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: .stretch,
-                  spacing: 8,
-                  children: [
-                    Text('الجزء', style: AppTextStyles.body(weight: .bold)),
-                    SingleChildScrollView(
-                      scrollDirection: .horizontal,
-                      child: Row(
-                        crossAxisAlignment: .start,
-                        spacing: 8,
-                        children: List.generate(30, (i) => _buildPart(i + 1)),
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: .stretch,
-                  spacing: 8,
-                  children: [
-                    Text('السورة', style: AppTextStyles.body(weight: .bold)),
-                    SingleChildScrollView(
-                      scrollDirection: .horizontal,
-                      child: Row(
-                        crossAxisAlignment: .start,
-                        spacing: 8,
-                        children: [
-                          for (final surah in SurahModel.surahs.where(
-                            (surah) => surah.partNumbers.contains(_qPart),
-                          ))
-                            _buildSurah(surah),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
+        child: Column(
+          spacing: 24,
+          crossAxisAlignment: .stretch,
+          children: [
+            _buildHeader(context),
+            const SizedBox(height: 12),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
                   spacing: 24,
+                  crossAxisAlignment: .stretch,
                   children: [
-                    Row(
-                      spacing: 12,
+                    _buildRewayaSection(context),
+                    _buildPartSection(),
+                    _buildSurahSection(),
+                    _buildVerseSection(),
+                    Column(
                       children: [
-                        Text('من', style: AppTextStyles.body(weight: .bold)),
-                        SizedBox(
-                          width: 100,
-                          child: TextFormField(
-                            controller: _startVerse,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'حقل إجباري';
-                              }
-                              final v = int.parse(value);
-                              if (v <= 0) return '1 أقل رقم'.toArabicNumbers();
-                              return null;
-                            },
-                          ),
-                        ),
+                        _buildMemory(),
+                        _buildRecite(),
+                        _buildTajweed(),
                       ],
                     ),
-                    Row(
-                      spacing: 12,
-                      children: [
-                        Text('إلى', style: AppTextStyles.body(weight: .bold)),
-                        SizedBox(
-                          width: 100,
-                          child: TextFormField(
-                            controller: _endVerse,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'حقل إجباري';
-                              }
-                              final v = int.parse(value);
-                              if (v >
-                                  SurahModel.surahs
-                                      .singleWhere(
-                                        (s) => s.number == _surahNumber,
-                                      )
-                                      .numberOfVerses) {
-                                return 'X';
-                              }
-                              return null;
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
+                    _buildDatePicker(context),
                   ],
                 ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'الحفظ',
-                        style: AppTextStyles.body(weight: .bold),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 4,
-                      child: Slider(
-                        min: minScore.toDouble(),
-                        max: maxScore.toDouble(),
-                        divisions: 10,
-                        activeColor: AppColors.green,
-                        inactiveColor: AppColors.softContainer,
-                        showValueIndicator: .never,
-                        label: '$_memoryScore'.toArabicNumbers(),
-                        value: _memoryScore.toDouble(),
-                        onChanged: (value) => _setMemoryScore(value.toInt()),
-                      ),
-                    ),
-                    Text(
-                      '$_memoryScore'.toArabicNumbers(),
-                      style: AppTextStyles.body(weight: .bold),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'التلاوة',
-                        style: AppTextStyles.body(weight: .bold),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 4,
-                      child: Slider(
-                        min: minScore.toDouble(),
-                        max: maxScore.toDouble(),
-                        divisions: 10,
-                        activeColor: AppColors.orange,
-                        inactiveColor: AppColors.softContainer,
-                        showValueIndicator: .never,
-                        label: '$_reciteScore'.toArabicNumbers(),
-                        value: _reciteScore.toDouble(),
-                        onChanged: (value) => _setReciteScore(value.toInt()),
-                      ),
-                    ),
-                    Text(
-                      '$_reciteScore'.toArabicNumbers(),
-                      style: AppTextStyles.body(weight: .bold),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'الاحكام',
-                        style: AppTextStyles.body(weight: .bold),
-                      ),
-                    ),
-                    Expanded(
-                      flex: 4,
-                      child: Slider(
-                        min: minScore.toDouble(),
-                        max: maxScore.toDouble(),
-                        divisions: 10,
-                        activeColor: AppColors.red,
-                        inactiveColor: AppColors.softContainer,
-                        showValueIndicator: .never,
-                        label: '$_tajweedScore'.toArabicNumbers(),
-                        value: _tajweedScore.toDouble(),
-                        onChanged: (value) => _setTajweedScore(value.toInt()),
-                      ),
-                    ),
-                    Text(
-                      '$_tajweedScore'.toArabicNumbers(),
-                      style: AppTextStyles.body(weight: .bold),
-                    ),
-                  ],
-                ),
-                TextFormField(
-                  controller: TextEditingController(
-                    text:
-                        'التاريخ:   ${_reciteDate.toIso8601StringWithoutMilliseconds().toArabicNumbers()}',
-                  ),
-                  style: AppTextStyles.body(weight: .bold),
-                  readOnly: true,
-                  selectAllOnFocus: false,
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
-                      helpText: 'تاريخ التسميع',
-                      barrierColor: Colors.black87,
-                      currentDate: DateTime.now(),
-                      locale: const Locale('ar', 'EG'),
-                      textDirection: .rtl,
-                      initialEntryMode: .calendarOnly,
-                    );
-                    if (date != null) _setRecitationDate(date);
-                  },
-                ),
-              ],
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: .spaceBetween,
+      children: [
+        Text('إضافة تسميع جديد', style: AppTextStyles.display(size: 32)),
+        Row(
+          mainAxisSize: .min,
+          spacing: 8,
+          children: [
+            AbsorbPointer(
+              absorbing: _errorStart || _errorEnd,
+              child: IconButton.filled(
+                onPressed: _addRecitation,
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.green.withValues(
+                    alpha: _errorStart || _errorEnd ? .3 : .6,
+                  ),
+                ),
+                icon: const Icon(Icons.check),
+                iconSize: 32,
+                color: AppColors.indigo,
+              ),
+            ),
+            IconButton.filled(
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.red.withValues(alpha: .6),
+              ),
+              icon: const Icon(Icons.clear),
+              iconSize: 32,
+              color: AppColors.indigo,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVerseSection() {
+    return Row(
+      spacing: 24,
+      children: [
+        Row(
+          spacing: 12,
+          children: [
+            Text('من', style: AppTextStyles.body(weight: .bold)),
+            SizedBox(
+              width: 100,
+              child: TextFormField(
+                controller: _startVerse,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  fillColor: _errorStart
+                      ? AppColors.red.withValues(alpha: .25)
+                      : AppColors.softContainer.withValues(alpha: .6),
+                  hintText: 'الآية',
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  FilteringTextInputFormatter.allow(RegExp(r'[1-9]\d*')),
+                ],
+                onChanged: (value) {
+                  if (value.isEmpty) {
+                    _setErrorEnd(true);
+                  } else {
+                    final v = int.parse(value);
+                    if (v >
+                        SurahModel.surahs
+                            .singleWhere((s) => s.number == _surahNumber)
+                            .numberOfVerses) {
+                      _setErrorStart(true);
+                    } else {
+                      _setErrorStart(false);
+                    }
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        Row(
+          spacing: 12,
+          children: [
+            Text('إلى', style: AppTextStyles.body(weight: .bold)),
+            SizedBox(
+              width: 100,
+              child: TextFormField(
+                controller: _endVerse,
+                keyboardType: TextInputType.number,
+                selectAllOnFocus: false,
+                decoration: InputDecoration(
+                  fillColor: _errorEnd
+                      ? AppColors.red.withValues(alpha: .25)
+                      : AppColors.softContainer.withValues(alpha: .6),
+                  hintText: 'الآية',
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  FilteringTextInputFormatter.allow(RegExp(r'[1-9]\d*')),
+                ],
+                onChanged: (value) {
+                  if (value.isEmpty) {
+                    _setErrorEnd(true);
+                  } else {
+                    final v = int.parse(value);
+                    if (v >
+                            SurahModel.surahs
+                                .singleWhere((s) => s.number == _surahNumber)
+                                .numberOfVerses ||
+                        v == int.parse(_startVerse.text)) {
+                      _setErrorEnd(true);
+                    } else {
+                      _setErrorEnd(false);
+                    }
+                  }
+                },
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                _endVerse.text = SurahModel.surahs
+                    .singleWhere((s) => s.number == _surahNumber)
+                    .numberOfVerses
+                    .toString();
+              },
+              child: const Icon(
+                Icons.done_all_outlined,
+                size: 32,
+                color: AppColors.green,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDatePicker(BuildContext context) {
+    return TextFormField(
+      controller: TextEditingController(
+        text:
+            'التاريخ:   ${_reciteDate.toIso8601StringWithoutMilliseconds().toArabicNumbers()}',
+      ),
+      style: AppTextStyles.body(weight: .bold),
+      readOnly: true,
+      selectAllOnFocus: false,
+      onTap: () async {
+        final date = await showDatePicker(
+          context: context,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+          helpText: 'تاريخ التسميع',
+          barrierColor: Colors.black87,
+          currentDate: DateTime.now(),
+          locale: const Locale('ar', 'EG'),
+          textDirection: .rtl,
+          initialEntryMode: .calendarOnly,
+        );
+        if (date != null) _setRecitationDate(date);
+      },
+    );
+  }
+
+  Widget _buildTajweed() {
+    return Row(
+      children: [
+        Expanded(
+          child: Text('الاحكام', style: AppTextStyles.body(weight: .bold)),
+        ),
+        Expanded(
+          flex: 4,
+          child: Slider(
+            min: minScore.toDouble(),
+            max: maxScore.toDouble(),
+            divisions: 10,
+            activeColor: AppColors.red,
+            inactiveColor: AppColors.softContainer,
+            showValueIndicator: .never,
+            label: '$_tajweedScore'.toArabicNumbers(),
+            value: _tajweedScore.toDouble(),
+            onChanged: (value) => _setTajweedScore(value.toInt()),
           ),
         ),
+        Text(
+          '$_tajweedScore'.toArabicNumbers(),
+          style: AppTextStyles.body(weight: .bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecite() {
+    return Row(
+      children: [
+        Expanded(
+          child: Text('التلاوة', style: AppTextStyles.body(weight: .bold)),
+        ),
+        Expanded(
+          flex: 4,
+          child: Slider(
+            min: minScore.toDouble(),
+            max: maxScore.toDouble(),
+            divisions: 10,
+            activeColor: AppColors.orange,
+            inactiveColor: AppColors.softContainer,
+            showValueIndicator: .never,
+            label: '$_reciteScore'.toArabicNumbers(),
+            value: _reciteScore.toDouble(),
+            onChanged: (value) => _setReciteScore(value.toInt()),
+          ),
+        ),
+        Text(
+          '$_reciteScore'.toArabicNumbers(),
+          style: AppTextStyles.body(weight: .bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMemory() {
+    return Row(
+      children: [
+        Expanded(
+          child: Text('الحفظ', style: AppTextStyles.body(weight: .bold)),
+        ),
+        Expanded(
+          flex: 4,
+          child: Slider(
+            min: minScore.toDouble(),
+            max: maxScore.toDouble(),
+            divisions: 10,
+            activeColor: AppColors.green,
+            inactiveColor: AppColors.softContainer,
+            showValueIndicator: .never,
+            label: '$_memoryScore'.toArabicNumbers(),
+            value: _memoryScore.toDouble(),
+            onChanged: (value) => _setMemoryScore(value.toInt()),
+          ),
+        ),
+        Text(
+          '$_memoryScore'.toArabicNumbers(),
+          style: AppTextStyles.body(weight: .bold),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSurahSection() {
+    return Column(
+      crossAxisAlignment: .stretch,
+      spacing: 8,
+      children: [
+        Text('السورة', style: AppTextStyles.body(weight: .bold)),
+        SingleChildScrollView(
+          scrollDirection: .horizontal,
+          child: Row(
+            crossAxisAlignment: .start,
+            spacing: 8,
+            children: [
+              for (final surah in SurahModel.surahs.where(
+                (surah) => surah.partNumbers.contains(_qPart),
+              ))
+                _buildSurah(surah),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPartSection() {
+    return Column(
+      crossAxisAlignment: .stretch,
+      spacing: 8,
+      children: [
+        Text('الجزء', style: AppTextStyles.body(weight: .bold)),
+        SingleChildScrollView(
+          scrollDirection: .horizontal,
+          child: Row(
+            crossAxisAlignment: .start,
+            spacing: 8,
+            children: List.generate(30, (i) => _buildPart(i + 1)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRewayaSection(BuildContext context) {
+    return SizedBox(
+      height: context.sh * .2,
+      child: Column(
+        crossAxisAlignment: .stretch,
+        mainAxisSize: .min,
+        spacing: 8,
+        children: [
+          Text('الرواية', style: AppTextStyles.body(weight: .bold)),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Wrap(
+                alignment: .center,
+                runAlignment: .center,
+                crossAxisAlignment: .center,
+                children: QuranRewaya.values.map(_buildRewaya).toList(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

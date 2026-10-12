@@ -15,7 +15,12 @@ abstract final class AppTheme {
       surfaceTintColor: AppColors.background,
     ),
     datePickerTheme: _datePickerTheme(),
-    inputDecorationTheme: InputDecorationThemeData(
+    inputDecorationTheme: _inputTheme(),
+    sliderTheme: const SliderThemeData(trackHeight: 16),
+  );
+
+  static InputDecorationThemeData _inputTheme() {
+    return InputDecorationThemeData(
       filled: true,
       fillColor: AppColors.softContainer.withValues(alpha: .6),
       border: .none,
@@ -32,8 +37,8 @@ abstract final class AppTheme {
         weight: .bold,
       ),
       hintStyle: AppTextStyles.body(),
-    ),
-  );
+    );
+  }
 
   static DatePickerThemeData _datePickerTheme() {
     return DatePickerThemeData(

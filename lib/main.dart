@@ -4,9 +4,6 @@ import 'package:om_yahya_recitation_center/app/screens/splash_screen.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_theme.dart';
 
-//> ADD ERROR FOR [END VERSE]
-//> MODIFY COLORS AND WIDTHS OF SLIDERS
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
