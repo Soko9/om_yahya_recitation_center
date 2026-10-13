@@ -19,7 +19,16 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  icons_launcher: ^3.1.0
   very_good_analysis: ^11.0.0
 
 flutter:
   uses-material-design: true
+
+icons_launcher:
+  image_path: "assets/logo.png"
+  platforms:
+    android:
+      enable: true
+    linux:
+      enable: true
