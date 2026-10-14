@@ -41,8 +41,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // unawaited(_deleteUnusedRecitations());
     unawaited(_loadRecitations());
   }
+
+  // Future<void> _deleteUnusedRecitations() async {
+  //   _setLoading(true);
+  //   try {
+  //     await DbService.deleteLatest5Days();
+  //   } on Exception catch (_) {
+  //     //! ADD ERROR HANDELING
+  //   } finally {
+  //     _setLoading(false);
+  //   }
+  // }
 
   Future<void> _loadRecitations() async {
     _setLoading(true);
@@ -127,22 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
               .toArabicNumbers(),
       qTitles: const ['الطالب'],
       qValues: [recitation.tenant?.fullName],
-      floatingWidget: Container(
-        padding: const .all(24),
-        decoration: BoxDecoration(
-          color: (avgScore <= 5
-              ? AppColors.red
-              : avgScore <= 8
-              ? AppColors.orange
-              : AppColors.green),
-          shape: .circle,
-          boxShadow: const [BoxShadow(offset: Offset(6, 6))],
-        ),
-        child: Text(
-          '10  /  $avgScore'.toArabicNumbers(),
-          style: AppTextStyles.title(color: AppColors.background),
-        ),
-      ),
+      score: avgScore,
+      over: 10,
     );
   }
 }

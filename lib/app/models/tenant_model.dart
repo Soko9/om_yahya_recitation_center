@@ -2,11 +2,11 @@ import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 
 class TenantModel {
   const new({
-    required this.id,
     required this.firstName,
     required this.middleName,
     required this.lastName,
     required this.joinedAt,
+    this.id = 0,
     this.avgScoreFromHundred = 0,
     this.latestSurahNumber = 1,
     this.latestQPart = 1,
@@ -39,7 +39,6 @@ class TenantModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'first_name': firstName,
       'middle_name': middleName,
       'last_name': lastName,

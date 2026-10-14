@@ -61,11 +61,43 @@ extension TenantX on TenantModel {
 }
 
 extension StringX on String {
+  static const List<String> _arabicDigits = [
+    '٠',
+    '١',
+    '٢',
+    '٣',
+    '٤',
+    '٥',
+    '٦',
+    '٧',
+    '٨',
+    '٩',
+  ];
+
+  static const List<String> _westernDigits = [
+    '0',
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+  ];
+
   String toArabicNumbers() {
-    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
     return replaceAllMapped(
       RegExp('[0-9]'),
-      (match) => arabicDigits[int.parse(match.group(0)!)],
+      (match) => _arabicDigits[int.parse(match[0]!)],
+    );
+  }
+
+  String toWesternNumbers() {
+    return replaceAllMapped(
+      RegExp('[٠-٩]'),
+      (match) => _westernDigits[_arabicDigits.indexOf(match[0]!)],
     );
   }
 }

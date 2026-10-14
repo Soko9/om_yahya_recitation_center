@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
 
 abstract final class AppTextStyles {
   const new _();
 
+  static const _beiruti = 'Beiruti';
+  static const _reem = 'ReemKufi';
+
   static TextStyle display({
     double size = 94,
     Color color = AppColors.indigo,
     FontWeight weight = .bold,
-  }) => GoogleFonts.reemKufi(
+  }) => TextStyle(
+    fontFamily: _reem,
     fontSize: size,
     fontWeight: weight,
     color: color,
@@ -20,7 +23,8 @@ abstract final class AppTextStyles {
     double size = 32,
     Color color = AppColors.indigo,
     FontWeight weight = .bold,
-  }) => GoogleFonts.beiruti(
+  }) => TextStyle(
+    fontFamily: _beiruti,
     fontSize: size,
     fontWeight: weight,
     color: color,
@@ -31,7 +35,8 @@ abstract final class AppTextStyles {
     double size = 24,
     Color color = AppColors.indigo,
     FontWeight weight = .normal,
-  }) => GoogleFonts.beiruti(
+  }) => TextStyle(
+    fontFamily: _beiruti,
     fontSize: size,
     fontWeight: weight,
     color: color,

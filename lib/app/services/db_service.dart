@@ -183,6 +183,15 @@ abstract final class DbService {
     });
   }
 
+  static Future<void> deleteLatest5Days() async {
+    final db = await _database;
+    await db.delete(
+      _recitationsTableName,
+      where: 'recited_at < ?',
+      whereArgs: [DateTime.now().subtract(5.day).toIsoMap],
+    );
+  }
+
   static Future<void> _refreshTenantStats(
     DatabaseExecutor db,
     int tenantId,

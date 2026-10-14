@@ -11,7 +11,6 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  google_fonts: ^9.0.0
   path: ^1.9.1
   sqflite: ^2.4.4+1
   sqflite_common_ffi: ^2.4.3
@@ -24,6 +23,26 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: Beiruti
+      fonts:
+        - asset: assets/fonts/Beiruti-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Beiruti-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Beiruti-Bold.ttf
+          weight: 700
+
+    - family: ReemKufi
+      fonts:
+        - asset: assets/fonts/ReemKufi-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/ReemKufi-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/ReemKufi-Bold.ttf
+          weight: 700
+
 
 icons_launcher:
   image_path: "assets/logo.png"

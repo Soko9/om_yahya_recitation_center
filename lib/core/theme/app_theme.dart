@@ -5,7 +5,7 @@ import 'package:om_yahya_recitation_center/core/theme/app_text_styles.dart';
 abstract final class AppTheme {
   const new _();
 
-  static ThemeData get lightTheme => ThemeData.light().copyWith(
+  static ThemeData get lightTheme => ThemeData(fontFamily: 'Beiruti').copyWith(
     scaffoldBackgroundColor: AppColors.background,
     colorScheme: ColorScheme.fromSeed(seedColor: AppColors.green),
     appBarTheme: const AppBarTheme(

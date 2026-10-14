@@ -29,7 +29,6 @@ class _AddTenantSheetState extends State<AddTenantSheet> {
   Future<void> _addTenant() async {
     if (_formKey.currentState!.validate()) {
       final tenant = TenantModel(
-        id: DateTime.now().millisecondsSinceEpoch,
         firstName: _firstNameController.text.trim(),
         middleName: _middleNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
@@ -59,7 +58,7 @@ class _AddTenantSheetState extends State<AddTenantSheet> {
         child: Padding(
           padding: const .all(12),
           child: Column(
-            spacing: 12,
+            spacing: 32,
             crossAxisAlignment: .stretch,
             children: [
               Row(

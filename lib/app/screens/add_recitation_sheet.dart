@@ -72,6 +72,7 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
 
   final TextEditingController _startVerse = TextEditingController();
   final TextEditingController _endVerse = TextEditingController();
+  final TextEditingController _notes = TextEditingController();
 
   bool _errorStart = true;
   void _setErrorStart(bool value) {
@@ -89,18 +90,18 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
 
   Future<void> _addRecitation() async {
     final newRecitation = RecitationModel(
-      id: DateTime.now().millisecondsSinceEpoch,
       tenantId: widget.tenant.id,
       rewayah: _rewaya,
       recitedAt: _reciteDate,
       surahNumber: _surahNumber,
       qPart: _qPart,
-      startQVerse: int.parse(_startVerse.text.trim()),
-      endQVerse: int.parse(_endVerse.text.trim()),
+      startQVerse: int.parse(_startVerse.text.trim().toWesternNumbers()),
+      endQVerse: int.parse(_endVerse.text.trim().toWesternNumbers()),
       memoryScore: _memoryScore,
       reciteScore: _reciteScore,
       tajweedScore: _tajweedScore,
       tenant: widget.tenant,
+      notes: _notes.text.isEmpty ? null : _notes.text.trim(),
     );
 
     await DbService.insertRecitation(newRecitation);
@@ -113,6 +114,7 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
   void dispose() {
     _startVerse.dispose();
     _endVerse.dispose();
+    _notes.dispose();
     super.dispose();
   }
 
@@ -123,30 +125,43 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
       child: Padding(
         padding: const .all(12),
         child: Column(
-          spacing: 24,
+          spacing: 12,
           crossAxisAlignment: .stretch,
           children: [
             _buildHeader(context),
-            const SizedBox(height: 12),
             Expanded(
               child: SingleChildScrollView(
-                child: Column(
-                  spacing: 24,
-                  crossAxisAlignment: .stretch,
-                  children: [
-                    _buildRewayaSection(context),
-                    _buildPartSection(),
-                    _buildSurahSection(),
-                    _buildVerseSection(),
-                    Column(
-                      children: [
-                        _buildMemory(),
-                        _buildRecite(),
-                        _buildTajweed(),
-                      ],
-                    ),
-                    _buildDatePicker(context),
-                  ],
+                child: Padding(
+                  padding: const .all(12),
+                  child: Column(
+                    spacing: 32,
+                    crossAxisAlignment: .stretch,
+                    children: [
+                      _buildRewayaSection(context),
+                      _buildPartSection(),
+                      _buildSurahSection(),
+                      _buildVerseSection(),
+                      Column(
+                        children: [
+                          _buildMemory(),
+                          _buildRecite(),
+                          _buildTajweed(),
+                        ],
+                      ),
+                      _buildDatePicker(context),
+                      SizedBox(
+                        height: 64,
+                        child: TextFormField(
+                          controller: _notes,
+                          maxLines: null,
+                          style: AppTextStyles.body(weight: .bold),
+                          decoration: const InputDecoration(
+                            hintText: 'ملاحظات',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -209,6 +224,7 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
               child: TextFormField(
                 controller: _startVerse,
                 keyboardType: TextInputType.number,
+                style: AppTextStyles.body(weight: .bold),
                 decoration: InputDecoration(
                   fillColor: _errorStart
                       ? AppColors.red.withValues(alpha: .25)
@@ -232,6 +248,7 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
                     } else {
                       _setErrorStart(false);
                     }
+                    _startVerse.text = value.toArabicNumbers();
                   }
                 },
               ),
@@ -247,6 +264,7 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
               child: TextFormField(
                 controller: _endVerse,
                 keyboardType: TextInputType.number,
+                style: AppTextStyles.body(weight: .bold),
                 selectAllOnFocus: false,
                 decoration: InputDecoration(
                   fillColor: _errorEnd
@@ -273,6 +291,7 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
                       _setErrorEnd(false);
                     }
                   }
+                  _endVerse.text = value.toArabicNumbers();
                 },
               ),
             ),
@@ -281,7 +300,8 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
                 _endVerse.text = SurahModel.surahs
                     .singleWhere((s) => s.number == _surahNumber)
                     .numberOfVerses
-                    .toString();
+                    .toString()
+                    .toArabicNumbers();
                 _setErrorEnd(false);
               },
               child: const Icon(

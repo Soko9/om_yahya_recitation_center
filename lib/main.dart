@@ -4,6 +4,14 @@ import 'package:om_yahya_recitation_center/app/screens/splash_screen.dart';
 import 'package:om_yahya_recitation_center/app/services/db_service.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_theme.dart';
 
+//? v1.1.0
+//* CHECK FONT ON RELEASE
+//* CHECK FILE EXTENSION .APK ON GITHUB RELEASE
+//* CHANGE THE DISPLAY NAME OF THE APP
+//* ADD NOTES FOR RECITATION
+//* ADD DELETE FOR TENANTS AND RECITATIONS
+//. ADD AUTO-DELETE FOR RECITATION BEFORE 5 DAYS
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

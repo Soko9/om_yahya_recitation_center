@@ -131,22 +131,12 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
         recitation.reciteScore,
         recitation.tajweedScore,
       ],
-      floatingWidget: Container(
-        padding: const .all(24),
-        decoration: BoxDecoration(
-          color: (avgScore <= 5
-              ? AppColors.red
-              : avgScore <= 8
-              ? AppColors.orange
-              : AppColors.green),
-          shape: .circle,
-          boxShadow: const [BoxShadow(offset: Offset(6, 6))],
-        ),
-        child: Text(
-          '10  /  $avgScore'.toArabicNumbers(),
-          style: AppTextStyles.title(color: AppColors.background),
-        ),
-      ),
+      score: avgScore,
+      over: 10,
+      onDelete: () async {
+        await DbService.deleteRecitation(recitation.id);
+        await _loadRecitations();
+      },
     );
   }
 }

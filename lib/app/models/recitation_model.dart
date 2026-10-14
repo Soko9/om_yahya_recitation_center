@@ -37,7 +37,6 @@ enum QuranRewaya {
 
 class RecitationModel {
   const new({
-    required this.id,
     required this.tenantId,
     required this.recitedAt,
     required this.rewayah,
@@ -48,6 +47,7 @@ class RecitationModel {
     required this.reciteScore,
     required this.tajweedScore,
     required this.memoryScore,
+    this.id = 0,
     this.notes,
     this.tenant,
   });
@@ -92,7 +92,6 @@ class RecitationModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'tenant_id': tenantId,
       'recited_at': recitedAt.toIsoMap,
       'rewayah': rewayah.name,

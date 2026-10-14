@@ -123,22 +123,12 @@ class _TenantsScreenState extends State<TenantsScreen> {
       onTap: () async {
         await context.push(RecitationsScreen(tenant: tenant));
       },
-      floatingWidget: Container(
-        padding: const .all(24),
-        decoration: BoxDecoration(
-          color: (tenant.avgScoreFromHundred <= 59
-              ? AppColors.red
-              : tenant.avgScoreFromHundred <= 79
-              ? AppColors.orange
-              : AppColors.green),
-          shape: .circle,
-          boxShadow: const [BoxShadow(offset: Offset(6, 6))],
-        ),
-        child: Text(
-          '100  /  ${tenant.avgScoreFromHundred}'.toArabicNumbers(),
-          style: AppTextStyles.title(color: AppColors.background),
-        ),
-      ),
+      score: tenant.avgScoreFromHundred,
+      over: 100,
+      onDelete: () async {
+        await DbService.deleteTenant(tenant.id);
+        await _loadTenants();
+      },
     );
   }
 }
