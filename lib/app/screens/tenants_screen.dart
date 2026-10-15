@@ -122,6 +122,7 @@ class _TenantsScreenState extends State<TenantsScreen> {
       ],
       onTap: () async {
         await context.push(RecitationsScreen(tenant: tenant));
+        await _loadTenants();
       },
       score: tenant.avgScoreFromHundred,
       over: 100,

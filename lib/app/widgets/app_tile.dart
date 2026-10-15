@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:om_yahya_recitation_center/app/widgets/app_button.dart';
 import 'package:om_yahya_recitation_center/core/shared/app_extensions.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_colors.dart';
 import 'package:om_yahya_recitation_center/core/theme/app_text_styles.dart';
@@ -13,6 +14,7 @@ class AppTile extends StatelessWidget {
     this.onDelete,
     this.title = '',
     this.subtitle = '',
+    this.notes,
     super.key,
   }) : assert(
          qTitles.length == qValues.length,
@@ -27,6 +29,47 @@ class AppTile extends StatelessWidget {
   final int over;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
+  final String? notes;
+
+  Future<void> _showConfirmingDialog(BuildContext context) async {
+    final fromTenant = onTap != null;
+
+    await showDialog<dynamic>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: .circular(4)),
+          backgroundColor: AppColors.background,
+          shadowColor: Colors.black,
+          elevation: 0,
+          title: Text(
+            'متأكد من مسح هذا ${fromTenant ? 'الطالب؟' : 'التسميع؟'}',
+          ),
+          titleTextStyle: AppTextStyles.title(),
+          actionsAlignment: .spaceBetween,
+          icon: const Icon(Icons.nearby_error, size: 64),
+          iconColor: AppColors.red,
+          iconPadding: const .all(8),
+          actions: [
+            AppButton(
+              label: 'متأكد',
+              onTap: () {
+                onDelete?.call();
+                context.pop();
+              },
+            ),
+            AppButton(
+              label: 'رجوع',
+              onTap: () {
+                context.pop();
+              },
+              mode: .outlined,
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,14 +101,18 @@ class AppTile extends StatelessWidget {
                     mainAxisSize: .min,
                     spacing: 12,
                     children: [
+                      if (notes != null) const SizedBox(height: 2),
                       Row(
-                        mainAxisAlignment: .spaceBetween,
+                        crossAxisAlignment: .start,
+                        spacing: 8,
                         children: [
                           if (title.isNotEmpty)
-                            Text(
-                              title,
-                              maxLines: 2,
-                              style: AppTextStyles.title(),
+                            Expanded(
+                              child: Text(
+                                title,
+                                maxLines: 2,
+                                style: AppTextStyles.title(),
+                              ),
                             ),
                           Container(
                             padding: const .all(12),
@@ -89,6 +136,40 @@ class AppTile extends StatelessWidget {
                               ),
                             ),
                           ),
+                          if (notes != null)
+                            Expanded(
+                              child: Container(
+                                padding: const .all(8),
+                                decoration: BoxDecoration(
+                                  border: .all(),
+                                  borderRadius: .circular(4),
+                                ),
+                                child: Column(
+                                  mainAxisSize: .min,
+                                  spacing: 12,
+                                  crossAxisAlignment: .start,
+                                  children: [
+                                    Text(
+                                      'ملاحظات:',
+                                      style: AppTextStyles.body(
+                                        size: 18,
+                                        weight: .bold,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 100,
+                                      child: SingleChildScrollView(
+                                        child: Text(
+                                          notes!,
+                                          overflow: .fade,
+                                          style: AppTextStyles.body(size: 18),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                       if (subtitle.isNotEmpty)
@@ -128,19 +209,17 @@ class AppTile extends StatelessWidget {
               left: onTap == null ? 38 : null,
               top: 0,
               child: GestureDetector(
-                onTap: onDelete,
+                onTap: () async => await _showConfirmingDialog(context),
                 child: Container(
                   height: 38,
                   width: 38,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.red,
-                    borderRadius: .circular(4),
-                    border: .all(),
-                    boxShadow: const [BoxShadow(offset: Offset(3, 3))],
+                    shape: .circle,
                   ),
                   child: const Icon(
                     Icons.delete_rounded,
-                    size: 32,
+                    size: 28,
                     color: Colors.white,
                   ),
                 ),

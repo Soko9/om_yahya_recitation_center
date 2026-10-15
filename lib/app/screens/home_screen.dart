@@ -79,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: AppFab(
         callback: () async {
           await context.push(const TenantsScreen());
+          await _loadRecitations();
         },
         icon: Icons.groups_rounded,
       ),
@@ -139,6 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
               .toArabicNumbers(),
       qTitles: const ['الطالب'],
       qValues: [recitation.tenant?.fullName],
+      notes: recitation.notes,
       score: avgScore,
       over: 10,
     );

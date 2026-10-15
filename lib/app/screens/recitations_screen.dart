@@ -131,6 +131,7 @@ class _RecitationsScreenState extends State<RecitationsScreen> {
         recitation.reciteScore,
         recitation.tajweedScore,
       ],
+      notes: recitation.notes,
       score: avgScore,
       over: 10,
       onDelete: () async {

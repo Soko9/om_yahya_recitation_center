@@ -37,6 +37,7 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
     setState(() {
       _surahNumber = number;
     });
+    _setLastVerse();
   }
 
   int _qPart = 1;
@@ -56,10 +57,24 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
     });
   }
 
+  bool _errorMemory = true;
+  void _setErrorMemory(bool value) {
+    setState(() {
+      _errorMemory = value;
+    });
+  }
+
   int _reciteScore = 0;
   void _setReciteScore(int score) {
     setState(() {
       _reciteScore = score;
+    });
+  }
+
+  bool _errorRecite = true;
+  void _setErrorRecite(bool value) {
+    setState(() {
+      _errorRecite = value;
     });
   }
 
@@ -70,9 +85,24 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
     });
   }
 
+  bool _errorTajweed = true;
+  void _setErrorTajweed(bool value) {
+    setState(() {
+      _errorTajweed = value;
+    });
+  }
+
   final TextEditingController _startVerse = TextEditingController();
   final TextEditingController _endVerse = TextEditingController();
   final TextEditingController _notes = TextEditingController();
+
+  void _setLastVerse() {
+    _endVerse.text = SurahModel.surahs
+        .singleWhere((s) => s.number == _surahNumber)
+        .numberOfVerses
+        .toString();
+    _setErrorEnd(false);
+  }
 
   bool _errorStart = true;
   void _setErrorStart(bool value) {
@@ -88,6 +118,9 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
     });
   }
 
+  bool get _fail =>
+      _errorStart || _errorEnd || _errorMemory || _errorRecite || _errorTajweed;
+
   Future<void> _addRecitation() async {
     final newRecitation = RecitationModel(
       tenantId: widget.tenant.id,
@@ -95,8 +128,8 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
       recitedAt: _reciteDate,
       surahNumber: _surahNumber,
       qPart: _qPart,
-      startQVerse: int.parse(_startVerse.text.trim().toWesternNumbers()),
-      endQVerse: int.parse(_endVerse.text.trim().toWesternNumbers()),
+      startQVerse: int.parse(_startVerse.text.trim()),
+      endQVerse: int.parse(_endVerse.text.trim()),
       memoryScore: _memoryScore,
       reciteScore: _reciteScore,
       tajweedScore: _tajweedScore,
@@ -108,6 +141,13 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
 
     if (!mounted) return;
     Navigator.pop(context, true);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _startVerse.text = '1';
+    _setErrorStart(false);
   }
 
   @override
@@ -149,16 +189,12 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
                         ],
                       ),
                       _buildDatePicker(context),
-                      SizedBox(
-                        height: 64,
-                        child: TextFormField(
-                          controller: _notes,
-                          maxLines: null,
-                          style: AppTextStyles.body(weight: .bold),
-                          decoration: const InputDecoration(
-                            hintText: 'ملاحظات',
-                          ),
-                        ),
+                      TextFormField(
+                        controller: _notes,
+                        minLines: 1,
+                        maxLines: 6,
+                        style: AppTextStyles.body(weight: .bold),
+                        decoration: const InputDecoration(hintText: 'ملاحظات'),
                       ),
                     ],
                   ),
@@ -181,12 +217,12 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
           spacing: 8,
           children: [
             AbsorbPointer(
-              absorbing: _errorStart || _errorEnd,
+              absorbing: _fail,
               child: IconButton.filled(
                 onPressed: _addRecitation,
                 style: IconButton.styleFrom(
                   backgroundColor: AppColors.green.withValues(
-                    alpha: _errorStart || _errorEnd ? .3 : .6,
+                    alpha: _fail ? .3 : .6,
                   ),
                 ),
                 icon: const Icon(Icons.check),
@@ -224,6 +260,13 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
               child: TextFormField(
                 controller: _startVerse,
                 keyboardType: TextInputType.number,
+                selectAllOnFocus: true,
+                onTap: () {
+                  _startVerse.selection = TextSelection(
+                    baseOffset: 0,
+                    extentOffset: _startVerse.text.length,
+                  );
+                },
                 style: AppTextStyles.body(weight: .bold),
                 decoration: InputDecoration(
                   fillColor: _errorStart
@@ -238,17 +281,17 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
                 onChanged: (value) {
                   if (value.isEmpty) {
                     _setErrorEnd(true);
+                    return;
+                  }
+
+                  final v = int.parse(value);
+                  if (v >=
+                      SurahModel.surahs
+                          .singleWhere((s) => s.number == _surahNumber)
+                          .numberOfVerses) {
+                    _setErrorStart(true);
                   } else {
-                    final v = int.parse(value);
-                    if (v >
-                        SurahModel.surahs
-                            .singleWhere((s) => s.number == _surahNumber)
-                            .numberOfVerses) {
-                      _setErrorStart(true);
-                    } else {
-                      _setErrorStart(false);
-                    }
-                    _startVerse.text = value.toArabicNumbers();
+                    _setErrorStart(false);
                   }
                 },
               ),
@@ -265,7 +308,13 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
                 controller: _endVerse,
                 keyboardType: TextInputType.number,
                 style: AppTextStyles.body(weight: .bold),
-                selectAllOnFocus: false,
+                selectAllOnFocus: true,
+                onTap: () {
+                  _endVerse.selection = TextSelection(
+                    baseOffset: 0,
+                    extentOffset: _endVerse.text.length,
+                  );
+                },
                 decoration: InputDecoration(
                   fillColor: _errorEnd
                       ? AppColors.red.withValues(alpha: .25)
@@ -279,31 +328,24 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
                 onChanged: (value) {
                   if (value.isEmpty) {
                     _setErrorEnd(true);
-                  } else {
-                    final v = int.parse(value);
-                    if (v >
-                            SurahModel.surahs
-                                .singleWhere((s) => s.number == _surahNumber)
-                                .numberOfVerses ||
-                        v == int.parse(_startVerse.text)) {
-                      _setErrorEnd(true);
-                    } else {
-                      _setErrorEnd(false);
-                    }
+                    return;
                   }
-                  _endVerse.text = value.toArabicNumbers();
+
+                  final v = int.parse(value);
+                  if (v >
+                          SurahModel.surahs
+                              .singleWhere((s) => s.number == _surahNumber)
+                              .numberOfVerses ||
+                      v <= int.parse(_startVerse.text)) {
+                    _setErrorEnd(true);
+                  } else {
+                    _setErrorEnd(false);
+                  }
                 },
               ),
             ),
             InkWell(
-              onTap: () {
-                _endVerse.text = SurahModel.surahs
-                    .singleWhere((s) => s.number == _surahNumber)
-                    .numberOfVerses
-                    .toString()
-                    .toArabicNumbers();
-                _setErrorEnd(false);
-              },
+              onTap: _setLastVerse,
               child: const Icon(
                 Icons.done_all_outlined,
                 size: 32,
@@ -359,12 +401,23 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
             showValueIndicator: .never,
             label: '$_tajweedScore'.toArabicNumbers(),
             value: _tajweedScore.toDouble(),
-            onChanged: (value) => _setTajweedScore(value.toInt()),
+            onChanged: (value) {
+              _setTajweedScore(value.toInt());
+
+              if (value > 0) {
+                _setErrorTajweed(false);
+              } else {
+                _setErrorTajweed(true);
+              }
+            },
           ),
         ),
         Text(
           '$_tajweedScore'.toArabicNumbers(),
-          style: AppTextStyles.body(weight: .bold),
+          style: AppTextStyles.body(
+            weight: .bold,
+            color: _errorTajweed ? AppColors.red : AppColors.indigo,
+          ),
         ),
       ],
     );
@@ -387,12 +440,23 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
             showValueIndicator: .never,
             label: '$_reciteScore'.toArabicNumbers(),
             value: _reciteScore.toDouble(),
-            onChanged: (value) => _setReciteScore(value.toInt()),
+            onChanged: (value) {
+              _setReciteScore(value.toInt());
+
+              if (value > 0) {
+                _setErrorRecite(false);
+              } else {
+                _setErrorRecite(true);
+              }
+            },
           ),
         ),
         Text(
           '$_reciteScore'.toArabicNumbers(),
-          style: AppTextStyles.body(weight: .bold),
+          style: AppTextStyles.body(
+            weight: .bold,
+            color: _errorRecite ? AppColors.red : AppColors.indigo,
+          ),
         ),
       ],
     );
@@ -415,12 +479,22 @@ class _AddRecitationSheetState extends State<AddRecitationSheet> {
             showValueIndicator: .never,
             label: '$_memoryScore'.toArabicNumbers(),
             value: _memoryScore.toDouble(),
-            onChanged: (value) => _setMemoryScore(value.toInt()),
+            onChanged: (value) {
+              _setMemoryScore(value.toInt());
+              if (value > 0) {
+                _setErrorMemory(false);
+              } else {
+                _setErrorMemory(true);
+              }
+            },
           ),
         ),
         Text(
           '$_memoryScore'.toArabicNumbers(),
-          style: AppTextStyles.body(weight: .bold),
+          style: AppTextStyles.body(
+            weight: .bold,
+            color: _errorMemory ? AppColors.red : AppColors.indigo,
+          ),
         ),
       ],
     );

@@ -101,8 +101,12 @@ abstract final class DbService {
       ''',
       [date.toIsoMap],
     );
-    await 2.sec.wait();
-    return recitationsMaps.map(RecitationModel.fromMap).toList();
+    await 1.sec.wait();
+    return recitationsMaps
+        .map(RecitationModel.fromMap)
+        .toList()
+        .reversed
+        .toList();
   }
 
   static Future<List<RecitationModel>> recitationsByTenant(int tenantId) async {
@@ -117,7 +121,7 @@ abstract final class DbService {
       ''',
       [tenantId],
     );
-    await 2.sec.wait();
+    await 1.sec.wait();
     return recitationsMaps.map(RecitationModel.fromMap).toList();
   }
 
